@@ -1,0 +1,10 @@
+{
+  "name": "claude-code-prod-starter",
+  "version": "0.3.0",
+  "description": "Production-grade Claude Code starter for engineering teams adopting Opus 4.7. Six persona agents (Design, CPO, CTO, CBO, Lead Engineer, Lead QA) under a 9-gate governance flow, plus context-management + model-selection + Claude-Code-primer skills, plus 5 onboarding docs. Project-agnostic — fill in PROJECT_CONTEXT.md per repo.",
+  "author": "Asif Newaz",
+  "license": "MIT",
+  "agents": ["./agents"],
+  "commands": ["./commands"],
+  "skills": ["./skills"]
+}
