@@ -65,3 +65,29 @@ For multi-step tasks, state a brief plan:
 ```
 
 Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
+
+## Red flags — these thoughts mean STOP
+
+| Thought | Reality |
+|---|---|
+| "I'll just pick the most likely interpretation" | That's silent assumption. Surface it inline first. |
+| "A little extra config flexibility won't hurt" | YAGNI. It hurts the next reader. Don't add it. |
+| "While I'm here, let me clean up this file" | Out of scope. Leave it. |
+| "I'll know it works when I see it" | "Seems right" is not done. Define the verify step. |
+| "The user said move fast" | Fast is the result of discipline, not its absence. |
+| "This abstraction will pay off later" | Later doesn't come. Inline it; abstract when you actually need it. |
+| "I added error handling for safety" | If the error can't actually happen, the handler is noise. Delete it. |
+
+## Common rationalizations to push back on
+
+- *"The simpler version doesn't handle edge case X."* — Does X actually happen in this code path? If not, you're adding code for a phantom case. Cut it.
+- *"This refactor makes the file cleaner."* — If the refactor wasn't requested and doesn't trace to the user's task, it's scope creep. File it as a follow-up; don't bundle it.
+- *"It's faster to just guess and try."* — Faster for one turn. Slower across the conversation when the guess is wrong.
+- *"The user will tell me if they want something different."* — They might. They might also accept your interpretation silently and find out it was wrong in production.
+
+## Verification
+
+- Before any non-trivial implementation: assumptions surfaced inline, in plain words.
+- Diff size matches the request — every changed line traces to the user's ask.
+- No new abstractions, configs, or error handlers without a concrete current need.
+- Success criterion stated and verified — not "looks right," but "the test for X passes" or "the verify command is green."
