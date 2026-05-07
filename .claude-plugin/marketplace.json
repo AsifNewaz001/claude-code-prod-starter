@@ -1,0 +1,20 @@
+{
+  "name": "claude-code-prod-starter",
+  "owner": {
+    "name": "Asif Newaz",
+    "email": "dbaricorp@gmail.com"
+  },
+  "metadata": {
+    "description": "Production-grade Claude Code starter for engineering teams adopting Opus 4.7 — six PM-style governance agents, three specialist agents, full SDLC skill library, seven lifecycle commands, and a session-start hook that auto-loads the dispatcher."
+  },
+  "plugins": [
+    {
+      "name": "claude-code-prod-starter",
+      "source": {
+        "source": "github",
+        "repo": "AsifNewaz001/claude-code-prod-starter"
+      },
+      "description": "Production-grade Claude Code starter: PM-style governance + SDLC skills + reusable specialist agents + auto-loading dispatcher."
+    }
+  ]
+}
