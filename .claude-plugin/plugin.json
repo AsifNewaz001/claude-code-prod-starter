@@ -1,10 +1,28 @@
 {
   "name": "claude-code-prod-starter",
-  "version": "0.3.0",
-  "description": "Production-grade Claude Code starter for engineering teams adopting Opus 4.7. Six persona agents (Design, CPO, CTO, CBO, Lead Engineer, Lead QA) under a 9-gate governance flow, plus context-management + model-selection + Claude-Code-primer skills, plus 5 onboarding docs. Project-agnostic — fill in PROJECT_CONTEXT.md per repo.",
-  "author": "Asif Newaz",
+  "description": "Production-grade Claude Code starter for engineering teams adopting Opus 4.7. Six PM-style persona agents under a 9-gate governance flow, three reusable specialist agents (code-reviewer, security-auditor, test-engineer), a full SDLC skill library (TDD, debugging, verification, code review, context management, model selection, Karpathy guidelines), seven lifecycle commands (/autopilot, /spec, /plan, /build, /test, /review, /ship), session-start hook with meta-skill auto-injection, and a 5-doc onboarding path. Project-agnostic — fill in PROJECT_CONTEXT.md per repo.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Asif Newaz",
+    "email": "dbaricorp@gmail.com"
+  },
+  "homepage": "https://github.com/AsifNewaz001/claude-code-prod-starter",
+  "repository": "https://github.com/AsifNewaz001/claude-code-prod-starter",
   "license": "MIT",
-  "agents": ["./agents"],
-  "commands": ["./commands"],
-  "skills": ["./skills"]
+  "keywords": [
+    "claude-code",
+    "opus-4.7",
+    "skills",
+    "agents",
+    "governance",
+    "tdd",
+    "code-review",
+    "engineering-workflow",
+    "starter",
+    "best-practices"
+  ],
+  "agents": "./agents",
+  "commands": "./commands",
+  "skills": "./skills",
+  "hooks": "./hooks/hooks.json"
 }

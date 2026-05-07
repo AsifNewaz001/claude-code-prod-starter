@@ -1,20 +1,50 @@
 # claude-code-prod-starter
 
-A Claude Code plugin for engineering teams adopting **Opus 4.7** on production-grade work. Six persona agents under a 9-gate governance flow, plus context literacy, model-selection guidance, and a 5-doc onboarding path.
+A production-grade Claude Code plugin for engineering teams adopting **Opus 4.7** on real codebases.
 
-Built so a new engineer can install the plugin, copy a few templates, fill in `PROJECT_CONTEXT.md`, and ship their first feature through a structured review flow on day one.
+You get: governance flow + SDLC skills + reusable specialists + auto-loading dispatcher. New engineer to first shipped feature in a day, with structured review at every step.
 
 ---
 
-## TL;DR — install + first day
+## What's in the box
 
 ```
+   DEFINE        PLAN         BUILD         VERIFY        REVIEW         SHIP
+  ┌──────┐    ┌──────┐    ┌──────┐    ┌──────┐    ┌──────┐    ┌──────┐
+  │ Spec │ →  │ Plan │ →  │ Code │ →  │ Test │ →  │ QA   │ →  │ Live │
+  └──────┘    └──────┘    └──────┘    └──────┘    └──────┘    └──────┘
+  /spec       /plan       /build      /test       /review     /ship
+
+                         OR run all 9 gates with /autopilot
+```
+
+| | Count | What |
+|---|---|---|
+| **Persona agents** | 6 | design, cpo, cto, cbo, lead-engineer, lead-qa — drive the 9-gate governance flow |
+| **Specialist agents** | 3 | code-reviewer, security-auditor, test-engineer — reusable, ad-hoc, no flow |
+| **Skills** | 10 | TDD, debugging, verification, code review, writing skills, worktree workflow, Karpathy guidelines, context management, model selection, primer + 1 dispatcher |
+| **Slash commands** | 7 | `/spec`, `/plan`, `/build`, `/test`, `/review`, `/ship` (lifecycle) + `/autopilot` (full 9-gate flow) |
+| **Hook** | 1 | SessionStart — auto-injects the dispatcher so Claude knows what's available |
+| **Templates** | 6 | CLAUDE.md, AGENTS.md, PROJECT_CONTEXT.md, HANDOFF.md, governance-plan.md, agent-budgets.md |
+| **Onboarding docs** | 5 | 5–8 min each — primer, first day, model selection, context management, pitfalls |
+
+---
+
+## Install
+
+```bash
 # In Claude Code:
-/plugin marketplace add github:<your-username>/claude-code-prod-starter
+/plugin marketplace add github:AsifNewaz001/claude-code-prod-starter
 /plugin install claude-code-prod-starter
 ```
 
-Then in your project:
+The SessionStart hook auto-loads the dispatcher (`using-prod-starter`) on every new session. From that moment, Claude knows which skill, agent, or command applies to whatever you ask.
+
+Need `jq` installed (`brew install jq` on macOS, `apt-get install jq` on Linux) for the hook. Without it, skills still work but you'll have to invoke them manually.
+
+---
+
+## First day in your project
 
 ```bash
 PLUGIN=~/.claude/plugins/claude-code-prod-starter
@@ -24,7 +54,10 @@ cp $PLUGIN/templates/docs/{governance-plan.md,agent-budgets.md} ./docs/
 echo '!docs/agent-runs.log' >> .gitignore
 ```
 
-Fill in `PROJECT_CONTEXT.md`. Then run `/autopilot` to ship your first feature through 9 gates of review.
+Fill in `PROJECT_CONTEXT.md` (stack, verify command, residency rules). Then either:
+
+- Run `/autopilot` to ship a feature through all 9 gates, OR
+- Run `/spec` → `/plan` → `/build` → `/test` → `/review` → `/ship` for lighter governance
 
 Full walkthrough: **[`docs/onboarding/02-first-day.md`](docs/onboarding/02-first-day.md)**.
 
@@ -32,73 +65,59 @@ Full walkthrough: **[`docs/onboarding/02-first-day.md`](docs/onboarding/02-first
 
 ## Why this plugin exists
 
-Most engineering teams adopting Opus 4.7 on real codebases hit the same five problems in their first month:
+Most teams adopting Opus 4.7 on real code hit the same five problems in their first month:
 
-1. **Vibe-coding** — features ship without PRDs, design contracts, or test coverage. SEV-1s slip through.
-2. **Token waste** — long sessions blow through budgets because nobody understands `/compact`, subagent context isolation, or the 5-min cache TTL.
-3. **Wrong model picks** — engineers default to Opus 4.7 for everything (10x cost) or Haiku for everything (10x bugs).
+1. **Vibe-coding** — features ship without specs, design contracts, or tests. SEV-1s slip through.
+2. **Token waste** — long sessions blow budgets because nobody understands `/compact`, subagent isolation, or cache TTL.
+3. **Wrong model picks** — Opus 4.7 for everything (10× cost) or Haiku for everything (10× bugs).
 4. **No persona separation** — the same Claude that wrote the code reviews it. Bugs invisible to the author stay invisible.
-5. **Onboarding chaos** — every new teammate learns Claude Code's vocabulary (agents vs skills vs commands vs hooks vs plugins) the hard way.
+5. **Onboarding chaos** — every new teammate learns Claude Code's vocabulary the hard way.
 
-This plugin solves all five with: a 9-gate flow (problem 1+4), context-management literacy (2), a model-selection skill (3), and a 5-doc onboarding path (5).
+This plugin solves all five: 9-gate flow (problems 1+4), context-management skill (2), model-selection skill (3), 5-doc onboarding path (5), and a dispatcher that auto-loads on every session.
 
 ---
 
-## What ships in the plugin
+## Auto-triggering — how it actually works
 
-### Agents (6 personas)
+When you start a session, the SessionStart hook injects the `using-prod-starter` dispatcher skill into Claude's context. The dispatcher tells Claude what's available and when to use it:
+
+- *"User wants to add a feature"* → invoke `test-driven-development`, suggest `/spec` if scope is unclear
+- *"User says 'this is broken'"* → invoke `systematic-debugging`
+- *"Code is written, ready to claim done"* → invoke `verification-before-completion`
+- *"User wants the full review flow"* → run `/autopilot`
+
+You don't have to remember which skill to use. Claude routes itself.
+
+If you want to override — *"don't use TDD on this prototype"* — say so. User instructions always beat the dispatcher.
+
+---
+
+## The 7 slash commands
+
+| Command | Phase | What it does |
+|---|---|---|
+| `/spec` | Define | Write a one-pager spec before code. Saves to `docs/specs/`. |
+| `/plan` | Plan | Break the spec into atomic, testable tasks. Saves to `docs/plans/`. |
+| `/build` | Build | Work the plan one task at a time, TDD throughout. |
+| `/test` | Verify | Run verify command + exercise feature in real runtime + edge case audit. |
+| `/review` | Review | Five-axis review (correctness, readability, architecture, security, performance). |
+| `/ship` | Ship | Pre-merge checks + commit hygiene + PR description + deploy notes. |
+| `/autopilot` | Full flow | Run all 9 governance gates end-to-end. Spawns the 6 persona agents. |
+
+Use the lifecycle commands for everyday work. Use `/autopilot` when blast radius is high (auth, payments, multi-tenant, regulated data).
+
+---
+
+## The 6 persona agents (governance flow)
 
 | Agent | Role | Model | Gates |
 |---|---|---|---|
-| **design-agent** | Visual contract before requirements; final visual parity at close | opus | G1 (open), G9 (close) |
+| **design-agent** | Visual contract before requirements; final visual parity at close | opus | G1, G9 |
 | **cpo-agent** | Requirements PRD + UAT | sonnet | G2, G8 |
 | **cto-agent** | Architecture + post-build adversarial review | opus | G3, G6 |
 | **cbo-agent** | Copy / CTA / localization / brand voice | sonnet | G4 |
 | **lead-engineer-agent** | Implements the CTO task list verbatim | sonnet | G5 |
 | **lead-qa-agent** | 3-layer adversarial QA | sonnet | G7 |
-
-### Commands
-
-- **`/autopilot`** — Orchestrator. Reads `HANDOFF.md`, spawns the 6 personas in order, captures telemetry, commits per gate, updates `HANDOFF.md`.
-
-### Skills
-
-- **`karpathy-guidelines`** — Andrej Karpathy's 4 LLM-coding rules (think → simplify → surgical → goal-driven).
-- **`context-management`** — When/how to `/compact`, subagent budgets, cache TTL, DCP concepts.
-- **`model-selection`** — Opus 4.7 / Sonnet 4.6 / Haiku 4.5 decision matrix.
-- **`claude-code-primer`** — Agents vs skills vs commands vs hooks vs plugins; vocabulary cheat-sheet.
-
-### Onboarding docs
-
-`docs/onboarding/` ships 5 short docs (5-8 min each):
-
-1. **`01-claude-code-primer.md`** — what Claude Code is, what it isn't, the 5 primitives
-2. **`02-first-day.md`** — install → scaffold → first `/autopilot` → first PR
-3. **`03-model-selection.md`** — when Opus 4.7 vs Sonnet 4.6 vs Haiku 4.5
-4. **`04-context-management.md`** — auto-compaction, `/compact`, subagent bundles, cache TTL
-5. **`05-pitfalls.md`** — 12 common mistakes engineers make adopting Claude Code
-
-### Templates
-
-`templates/` ships files the consumer copies into their own repo:
-
-- `CLAUDE.md` — always-loaded project guardrails (Karpathy + project entry points)
-- `AGENTS.md` — workflow + brand voice + the 6 agents declared
-- `PROJECT_CONTEXT.md` — fill-in template (stack, verify command, tenancy, residency, etc.)
-- `HANDOFF.md` — empty seed for `/autopilot`'s sprint state
-- `docs/governance-plan.md` — the 9-gate flow itself
-- `docs/agent-budgets.md` — per-gate token targets + telemetry format
-
-### Examples
-
-`examples/` ships filled-in references:
-
-- `brand-x-PROJECT_CONTEXT.md` — full multi-country e-commerce config (BD/AU/CA/RU on Postgres+Next.js)
-- `solo-prototype-PROJECT_CONTEXT.md` — minimal config for a single-engineer side project
-
----
-
-## The 9-gate flow at a glance
 
 ```
 G1 design  →  G2 cpo  →  G3 cto  →  G4 cbo  →  G5 lead-eng
@@ -108,7 +127,7 @@ G1 design  →  G2 cpo  →  G3 cto  →  G4 cbo  →  G5 lead-eng
                                               G7 lead-qa  →  G8 cpo UAT  →  G9 design final
 ```
 
-Each gate produces a Decision Record (`docs/decision-log/DR-YYYY-MM-DD-<feature>-g<N>-<role>.md`), capped at 10 lines. Each gate ends with a parseable verdict block:
+Each gate produces a Decision Record (`docs/decision-log/DR-YYYY-MM-DD-<feature>-g<N>-<role>.md`), capped at 10 lines. Each ends with a parseable verdict block:
 
 ```
 <verdict>APPROVED|CONDITIONAL|REJECTED</verdict>
@@ -119,7 +138,96 @@ Each gate produces a Decision Record (`docs/decision-log/DR-YYYY-MM-DD-<feature>
 
 `REJECTED` routes back. `CONDITIONAL` advances with conditions tracked. `APPROVED` advances unconditionally.
 
-Full flow: **[`templates/docs/governance-plan.md`](templates/docs/governance-plan.md)**
+Full flow: **[`templates/docs/governance-plan.md`](templates/docs/governance-plan.md)**.
+
+---
+
+## The 3 specialist agents (reusable, no flow)
+
+These are task-focused. No persona, no gate ownership. Spawn ad-hoc.
+
+| Agent | When to use |
+|---|---|
+| **code-reviewer** | Before merging any change. Five-axis review. |
+| **security-auditor** | Auth, payments, file uploads, external input — anything OWASP-relevant. |
+| **test-engineer** | Coverage uncertain, bug needs a regression test, suite is shallow / flaky. |
+
+```
+# In Claude:
+"Spawn the code-reviewer agent on this PR."
+"Spawn the security-auditor on the new login endpoint."
+"Spawn the test-engineer to audit coverage of the cart module."
+```
+
+---
+
+## The 10 skills
+
+**Process skills (engineering workflows)**
+
+| Skill | What |
+|---|---|
+| `using-prod-starter` | The dispatcher. Loaded automatically by the SessionStart hook. |
+| `karpathy-guidelines` | Andrej Karpathy's 4 LLM-coding rules: think → simplify → surgical → goal-driven. |
+| `test-driven-development` | Failing test first. Tests ship in the same commit. |
+| `systematic-debugging` | Reproduce, isolate, bisect, fix the cause, regression test. |
+| `verification-before-completion` | Never claim done without evidence. |
+| `code-review` | Five-axis review before merge. |
+| `writing-skills` | Author or edit a skill for this plugin. |
+| `worktree-workflow` | Git worktrees for parallel agent work and safe `/autopilot` runs. |
+
+**Knowledge skills (Claude Code literacy)**
+
+| Skill | What |
+|---|---|
+| `context-management` | When/how to `/compact`, subagent budgets, cache TTL. |
+| `model-selection` | Opus 4.7 / Sonnet 4.6 / Haiku 4.5 decision matrix. |
+| `claude-code-primer` | Agents vs skills vs commands vs hooks vs plugins. |
+
+---
+
+## Multi-harness use
+
+This plugin is built for Claude Code first. The `AGENTS.md` at the repo root mirrors the most important rules for harnesses that don't auto-load skills (Codex CLI, Cursor agents).
+
+If you want full functionality on a non-Claude-Code harness, you'll need to invoke skills manually rather than relying on the SessionStart hook. The skills, agents, and commands are all plain Markdown — read them directly if your harness can't auto-discover.
+
+---
+
+## What this plugin is opinionated about
+
+- **9 gates, no skipping.** Six adversarial reviewers in fixed order catches more SEV-1s than any single human reviewer.
+- **Self-review is forbidden.** The agent that wrote the code never reviews it. CTO at G6 reviews Lead Eng at G5. Hard rule.
+- **Tests ship in the same commit as code.** Never "tests later."
+- **No production code without a failing test first.** TDD is non-negotiable for behavior changes.
+- **Surgical changes only.** Touch only what the request requires.
+- **Decision Records ≤ 10 lines.** Edit code, don't document it.
+- **Model picks are deliberate.** Opus 4.7 only on highest-blast-radius gates. Sonnet 4.6 elsewhere.
+- **`/autopilot` pushes to feature branches only, never main.** Humans open and merge PRs.
+
+---
+
+## What this plugin is NOT
+
+- Not a guarantee against bugs. Six adversarial reviewers catch more than zero, but not all.
+- Not a replacement for a senior engineer's judgment. The agents reflect patterns; humans calibrate them.
+- Not free. A typical full-flow sprint costs $4–6 in API tokens at the default model split. Cheaper than a single SEV-1.
+- Not for trivial work. A typo fix doesn't need 9 gates. Use judgment — or `/spec` → `/build` for lighter-weight changes.
+- Not for spike branches. Spikes are exploration; gates are review. Different tools.
+
+---
+
+## Trade-offs (honest)
+
+Adopting this plugin means:
+
+- **More tokens per feature.** ~600–900k across the 9 gates is normal.
+- **Fewer features per week.** The flow takes longer than vibe-coding.
+- **Better catch rate on SEV-1s.** The whole point.
+- **Better onboarding for new teammates.** Vocabulary + workflow shipped together.
+- **Better institutional memory.** Every decision logged in `docs/decision-log/`.
+
+Worth it for systems with real users, money, or compliance exposure. Overkill for solo prototypes — use the abbreviated 3-gate flow in `examples/solo-prototype-PROJECT_CONTEXT.md`.
 
 ---
 
@@ -132,64 +240,10 @@ For a new engineer onboarding to Claude Code with this plugin:
 3. `docs/onboarding/03-model-selection.md` — daily decision
 4. `docs/onboarding/04-context-management.md` — token discipline
 5. `docs/onboarding/05-pitfalls.md` — what NOT to do
-6. The plugin's 4 skills (load automatically when relevant)
+6. The dispatcher (`skills/using-prod-starter/SKILL.md`) — loads automatically anyway
 7. Your project's filled-in `PROJECT_CONTEXT.md` and `AGENTS.md`
 
-Total reading: about 35 minutes. After that, run `/autopilot` and learn by shipping.
-
----
-
-## What this plugin is opinionated about (and why)
-
-- **9 gates, no skipping.** Six adversarial reviewers in a fixed order catches more SEV-1s than any single human reviewer.
-- **Decoupled from any specific stack.** Tenancy, residency, currency, locale list — all live in `PROJECT_CONTEXT.md`. The agents themselves don't assume your stack.
-- **Self-review is forbidden.** The persona that wrote the code never reviews it. CTO at G6 reviews Lead Eng at G5. Hard rule.
-- **Tests ship in the same commit as code.** Never "tests later."
-- **DR ≤ 10 lines.** Edit code, don't document it. Decision records are summaries, not narratives.
-- **Model picks are deliberate.** Opus 4.7 only on the highest-blast-radius gates (G1/G3/G6/G9). Sonnet 4.6 elsewhere.
-- **`/autopilot` push to feature branches only, never main.** The user opens / merges PRs.
-
----
-
-## What this plugin is NOT
-
-- Not a guarantee against bugs. Six adversarial reviewers catch more than zero, but not all.
-- Not a replacement for a senior engineer's judgment. The agents reflect *patterns*; humans calibrate them.
-- Not free. A typical sprint costs $4-6 in API tokens at the default model split. (Cheaper than a single SEV-1 incident.)
-- Not for trivial work. A typo fix doesn't need 9 gates. Use judgment.
-- Not for spike branches. Spikes are exploration; gates are review. Different tools.
-
----
-
-## Trade-off
-
-Adopting this plugin means:
-
-- More tokens per feature (~600-900k across all 9 gates is normal).
-- Fewer features per week.
-- Better catch rate on SEV-1s.
-- Better onboarding for new teammates.
-- Better institutional memory (every decision logged).
-
-Worth it for systems with real production users, money, or compliance exposure. Overkill for solo prototypes (use the abbreviated 3-gate flow instead — see `examples/solo-prototype-PROJECT_CONTEXT.md`).
-
----
-
-## Customization
-
-The agents reference `PROJECT_CONTEXT.md` and `AGENTS.md` by relative path. To use different filenames, search-replace the path in the agent files.
-
-The 9-gate numbering is opinionated. If your team uses a different gate count, edit the `<gates>` block in each agent's `.md` file. The verdict block format is what `/autopilot` parses — don't change that.
-
-The 6 agents have opinions baked in:
-- design-agent rejects desktop-first specs
-- cpo-agent enforces RICE > 5 by default
-- cto-agent rejects tenancy violations and over-threshold infra adds
-- cbo-agent forbids exclamation marks and competitor names
-- lead-engineer-agent implements verbatim — no improv
-- lead-qa-agent treats every PR as buggy until proven otherwise
-
-If any opinion doesn't match your team, edit the `<rules>` block. The opinions are the value — adjust them, don't delete them.
+About 35 minutes total. After that, run `/autopilot` and learn by shipping.
 
 ---
 
@@ -197,22 +251,45 @@ If any opinion doesn't match your team, edit the `<rules>` block. The opinions a
 
 ```
 claude-code-prod-starter/
-├── .claude-plugin/plugin.json
-├── agents/                       # 6 persona agents
-│   ├── design-agent.md
-│   ├── cpo-agent.md
-│   ├── cto-agent.md
-│   ├── cbo-agent.md
-│   ├── lead-engineer-agent.md
-│   └── lead-qa-agent.md
+├── .claude-plugin/
+│   ├── plugin.json
+│   └── marketplace.json
+├── .github/
+│   └── PULL_REQUEST_TEMPLATE.md
+├── hooks/
+│   ├── hooks.json
+│   └── session-start.sh
+├── agents/
+│   ├── design-agent.md            # persona — gates G1, G9
+│   ├── cpo-agent.md               # persona — gates G2, G8
+│   ├── cto-agent.md               # persona — gates G3, G6
+│   ├── cbo-agent.md               # persona — gate G4
+│   ├── lead-engineer-agent.md     # persona — gate G5
+│   ├── lead-qa-agent.md           # persona — gate G7
+│   ├── code-reviewer.md           # specialist
+│   ├── security-auditor.md        # specialist
+│   └── test-engineer.md           # specialist
 ├── commands/
-│   └── autopilot.md              # /autopilot orchestrator
-├── skills/                       # 4 skills, all project-agnostic
-│   ├── karpathy-guidelines/SKILL.md
-│   ├── context-management/SKILL.md
-│   ├── model-selection/SKILL.md
-│   └── claude-code-primer/SKILL.md
-├── templates/                    # consumer copies these into their repo
+│   ├── autopilot.md               # /autopilot — full 9-gate flow
+│   ├── spec.md                    # /spec — define
+│   ├── plan.md                    # /plan — plan
+│   ├── build.md                   # /build — build
+│   ├── test.md                    # /test — verify
+│   ├── review.md                  # /review — review
+│   └── ship.md                    # /ship — ship
+├── skills/
+│   ├── using-prod-starter/        # dispatcher (auto-loaded by hook)
+│   ├── karpathy-guidelines/
+│   ├── test-driven-development/
+│   ├── systematic-debugging/
+│   ├── verification-before-completion/
+│   ├── code-review/
+│   ├── writing-skills/
+│   ├── worktree-workflow/
+│   ├── context-management/
+│   ├── model-selection/
+│   └── claude-code-primer/
+├── templates/
 │   ├── CLAUDE.md
 │   ├── AGENTS.md
 │   ├── PROJECT_CONTEXT.md
@@ -220,7 +297,7 @@ claude-code-prod-starter/
 │   └── docs/
 │       ├── governance-plan.md
 │       └── agent-budgets.md
-├── docs/onboarding/              # 5 short docs (5-8 min each)
+├── docs/onboarding/               # 5 short docs
 │   ├── 01-claude-code-primer.md
 │   ├── 02-first-day.md
 │   ├── 03-model-selection.md
@@ -229,19 +306,30 @@ claude-code-prod-starter/
 ├── examples/
 │   ├── brand-x-PROJECT_CONTEXT.md
 │   └── solo-prototype-PROJECT_CONTEXT.md
+├── AGENTS.md                      # multi-harness entry point
+├── CONTRIBUTING.md
+├── CHANGELOG.md
+├── LICENSE
 └── README.md
 ```
 
 ---
 
-## Credits
+## Credits + influences
 
-- Inspired by [forrestchang/andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills) — the original Karpathy-guidelines CLAUDE.md/skill packaging.
-- Context-management concepts ported from [Opencode-DCP/opencode-dynamic-context-pruning](https://github.com/Opencode-DCP/opencode-dynamic-context-pruning) — runtime DCP for OpenCode (different tool; concepts apply).
+- Inspired by [forrestchang/andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills) — the original Karpathy-guidelines skill packaging.
+- Skill / hook / dispatcher patterns adapted from [obra/superpowers](https://github.com/obra/superpowers) and [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills).
+- Context-management concepts from [Opencode-DCP/opencode-dynamic-context-pruning](https://github.com/Opencode-DCP/opencode-dynamic-context-pruning).
 - Forked out of a multi-country DTC storefront where the 9-gate flow shipped two production sprints. Decoupled here so any project can adopt it.
+
+---
+
+## Contributing
+
+See **[CONTRIBUTING.md](CONTRIBUTING.md)**. Open an issue before any non-trivial PR. Read the contribution checklist. Match existing format.
 
 ---
 
 ## License
 
-MIT — fork, adapt, share.
+MIT — fork, adapt, share. See [LICENSE](LICENSE).
