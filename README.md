@@ -66,15 +66,38 @@ Spawns the 6 persona agents through 9 gates. Each gate produces a Decision Recor
 
 ## Install
 
-```bash
-# In Claude Code:
-/plugin marketplace add github:AsifNewaz001/claude-code-prod-starter
-/plugin install claude-code-prod-starter
+In Claude Code, type these at the prompt (not as a chat message):
+
+```
+/plugin marketplace add AsifNewaz001/claude-code-prod-starter
+/plugin install claude-code-prod-starter@claude-code-prod-starter
 ```
 
-The SessionStart hook auto-loads the dispatcher (`using-prod-starter`) on every new session. From that moment, Claude knows which skill, agent, or command applies to whatever you ask.
+> **SSH `Permission denied (publickey)` error?**
+> Claude Code's marketplace defaults to SSH cloning. If your SSH keys aren't set up for GitHub in the same context Claude Code runs in, the install fails. Force HTTPS instead:
+>
+> ```
+> /plugin marketplace remove claude-code-prod-starter
+> /plugin marketplace add https://github.com/AsifNewaz001/claude-code-prod-starter.git
+> /plugin install claude-code-prod-starter@claude-code-prod-starter
+> ```
 
-Need `jq` installed (`brew install jq` on macOS, `apt-get install jq` on Linux) for the hook. Without it, skills still work but you'll have to invoke them manually.
+When the install scope menu appears, pick **"Install for you (user scope)"** so the plugin is available across all your projects (`~/.claude/plugins/claude-code-prod-starter/`).
+
+**Then restart Claude Code** (`/quit`, then `claude` again). Plugin agents, skills, and slash commands only register on session start.
+
+### Verify install
+
+In a fresh session, type `/` at the prompt — autocomplete should show `/spec`, `/plan`, `/build`, `/test`, `/review`, `/code-simplify`, `/ship`, `/autopilot`. Or:
+
+```bash
+ls ~/.claude/plugins/claude-code-prod-starter/
+# Should list: agents/ commands/ skills/ hooks/ templates/ docs/
+```
+
+### Hook prerequisite
+
+The SessionStart hook auto-loads the dispatcher (`using-prod-starter`) on every new session. Need `jq` installed (`brew install jq` on macOS, `apt-get install jq` on Linux). Without it, skills still work but you'll have to invoke them manually via the `Skill` tool.
 
 ---
 
