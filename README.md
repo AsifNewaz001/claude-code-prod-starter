@@ -66,15 +66,53 @@ Spawns the 6 persona agents through 9 gates. Each gate produces a Decision Recor
 
 ## Install
 
+### Option A: Manual clone (most reliable)
+
+Works regardless of SSH config. In your terminal:
+
 ```bash
-# In Claude Code:
-/plugin marketplace add github:AsifNewaz001/claude-code-prod-starter
-/plugin install claude-code-prod-starter
+git clone https://github.com/AsifNewaz001/claude-code-prod-starter.git ~/.claude/plugins/claude-code-prod-starter
 ```
 
-The SessionStart hook auto-loads the dispatcher (`using-prod-starter`) on every new session. From that moment, Claude knows which skill, agent, or command applies to whatever you ask.
+Then restart Claude Code. The plugin files end up exactly where Claude Code looks for them.
 
-Need `jq` installed (`brew install jq` on macOS, `apt-get install jq` on Linux) for the hook. Without it, skills still work but you'll have to invoke them manually.
+### Option B: `/plugin install` (uses marketplace UI)
+
+In Claude Code, type these at the prompt (not as a chat message):
+
+```
+/plugin marketplace add AsifNewaz001/claude-code-prod-starter
+/plugin install claude-code-prod-starter@claude-code-prod-starter
+```
+
+When the install scope menu appears, pick **"Install for you (user scope)"** so the plugin is available across all your projects.
+
+> **SSH `Permission denied (publickey)` error?**
+> Claude Code's plugin install defaults to SSH cloning. If your SSH keys aren't loaded in the context Claude Code runs in, the install fails *even if `git push` works in your normal terminal*. Two fixes:
+>
+> 1. **Easiest**: use Option A (manual clone) above.
+> 2. **Or**: force the marketplace to HTTPS:
+>    ```
+>    /plugin marketplace remove claude-code-prod-starter
+>    /plugin marketplace add https://github.com/AsifNewaz001/claude-code-prod-starter.git
+>    /plugin install claude-code-prod-starter@claude-code-prod-starter
+>    ```
+>    The HTTPS fix doesn't always stick because the plugin's marketplace.json may still resolve to SSH for the actual clone. If it fails, fall back to Option A.
+
+**After install, restart Claude Code** (`/quit`, then `claude` again). Plugin agents, skills, and slash commands only register on session start.
+
+### Verify install
+
+In a fresh session, type `/` at the prompt — autocomplete should show `/spec`, `/plan`, `/build`, `/test`, `/review`, `/code-simplify`, `/ship`, `/autopilot`. Or:
+
+```bash
+ls ~/.claude/plugins/claude-code-prod-starter/
+# Should list: agents/ commands/ skills/ hooks/ templates/ docs/
+```
+
+### Hook prerequisite
+
+The SessionStart hook auto-loads the dispatcher (`using-prod-starter`) on every new session. Need `jq` installed (`brew install jq` on macOS, `apt-get install jq` on Linux). Without it, skills still work but you'll have to invoke them manually via the `Skill` tool.
 
 ---
 
