@@ -117,3 +117,28 @@ When context feels heavy:
 - Telling a subagent "read AGENTS.md and figure out what to do." They will read 5k tokens of context they don't need.
 - Calling `/compact` after every turn out of paranoia. The cache miss compounds.
 - Running `/loop 5m` and assuming each iteration is cached. 5 minutes = cache TTL boundary; expect cache miss every iteration.
+
+## Red flags — these thoughts mean STOP
+
+| Thought | Reality |
+|---|---|
+| "I'll paste the whole file so the agent has context" | Pasting 5k tokens to save 30 seconds of read-on-demand is a bad trade. Link the path. |
+| "I'll re-read this file just to be safe" | If you read it 3 turns ago and it didn't change, the answer is in this session. Stop. |
+| "Compacting feels risky, I'll just keep going" | Auto-compaction will fire eventually, lossily. Compact deliberately at phase boundaries. |
+| "The subagent should have all the context I have" | They get fresh context. They don't pay for yours. Send only the delta. |
+| "I'll set `/loop` to 5 minutes — round number" | 300s is the worst delay. Either ≤270s (cache warm) or ≥1200s (one cache miss buys a long wait). |
+| "The agent's prompt is fine, it's only 8k tokens" | 8k × N gates = N × 8k. Tight bundles compound. |
+
+## Common rationalizations to push back on
+
+- *"I'll figure out what the agent needs by trial and error."* — Trial and error costs tokens you can't get back. Spend 30 seconds writing a tight bundle instead.
+- *"The cache probably hit, no need to optimize."* — Cache hits are visible in token counts. Check before assuming.
+- *"`/compact` will lose important details."* — Auto-compaction loses MORE. Manual compact at phase boundaries with a focus argument is sharper.
+- *"The session is already long, can't fix it now."* — Yes you can. Compact at the next phase boundary; subsequent turns get cheap again.
+
+## Verification
+
+- After running `/compact`: the next turn's input token count is materially lower than before.
+- Subagent spawn prompts are under 2k tokens for routine gates, under 5k for complex ones.
+- No `/loop` interval falls in the 300–1200s "worst zone" — it's either ≤270s or ≥1200s.
+- When you finish a phase, you can name what you compacted and why — not just "everything before this turn."

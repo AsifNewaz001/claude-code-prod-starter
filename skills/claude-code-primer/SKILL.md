@@ -161,3 +161,34 @@ After installing the plugin and copying templates:
 | Plugin | Bundle of all the above | Git repo with `plugin.json` | `/plugin install` |
 | MCP server | External tool provider | `settings.json` `mcpServers:` | Tools become available globally |
 | Worktree | Isolated git checkout | `.git/worktrees/` | `git worktree add` |
+
+## Red flags — these thoughts mean STOP
+
+| Thought | Reality |
+|---|---|
+| "Just call Claude Code 'the API'" | Different products. Claude Code = CLI. API = developer SDK. They behave differently. |
+| "I'll add this rule to CLAUDE.md, AGENTS.md, AND the skill" | Pick one. Duplicating rules guarantees they diverge over time. |
+| "I'll put this project-specific config in a skill" | Skills are project-agnostic. Project-specific stuff goes in CLAUDE.md / AGENTS.md / PROJECT_CONTEXT.md. |
+| "I'll write a hook that calls the LLM" | Hooks are SHELL, not prompts. If you want LLM logic, write a slash command or skill. |
+| "The agent didn't trigger, the system is broken" | First check the description's first sentence — that's what gets matched. Vague description = no trigger. |
+| "I'll just type the agent name in the prompt" | Agents are spawned, not typed. They run via the Agent tool. Slash commands are what you type. |
+
+## Common rationalizations to push back on
+
+- *"I don't need to know the difference between skills and agents — they both add behavior."* — They cost differently. Agents have their own context window; skills inject into yours. Picking wrong wastes tokens.
+- *"I'll figure out where to put this rule by trying things."* — The decision matrix above tells you. Use it. The wrong location means the rule fires at the wrong time (or never).
+- *"My plugin's agents aren't loading, I'll re-run the install."* — First restart Claude Code. Agent registry loads on session start, not on install.
+- *"This vocabulary is just trivia."* — It's the difference between debugging a hook problem in 2 minutes (you know it's shell) vs 2 hours (you thought it was an LLM call).
+
+## When this skill applies
+
+- A teammate asks "what's the difference between X and Y?" where X/Y are Claude Code primitives.
+- You're about to add a behavior to Claude Code and aren't sure which primitive to use.
+- Something isn't working and you suspect the wrong primitive was chosen.
+- You're onboarding to Claude Code and the docs assume you already know the vocabulary.
+
+## Verification
+
+- You can name where any primitive lives, how it's invoked, and when to use it — without re-reading the docs.
+- When picking where to add a new behavior, you state which primitive and why in one sentence.
+- You can spot the wrong primitive in code review — e.g. "this should be a skill, not a hook" — with a one-sentence justification.

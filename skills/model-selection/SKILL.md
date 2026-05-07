@@ -114,3 +114,28 @@ Haiku 4.5     → lookups, single-file edits, hooks, status lines
 ```
 
 When in doubt: Sonnet 4.6.
+
+## Red flags — these thoughts mean STOP
+
+| Thought | Reality |
+|---|---|
+| "I'll just use Opus for everything to be safe" | You'll burn budget and slow down on routine work. Match model to task. |
+| "Haiku is cheap, I'll use it for the architecture review" | Haiku misses nuance. Architecture review is exactly where under-spec ships bugs. |
+| "The default model is set, I don't need to think about it" | The default may be wrong for the current task. Surface the choice for non-routine work. |
+| "Sonnet is good enough for this" — without thinking | Sonnet is the safe default but not always the right answer. Check against the decision flow. |
+| "Latency is killing me, downgrade to Haiku" | Try Opus 4.6 fast first. Don't trade quality for speed if quality matters. |
+| "I'll let the user pick" | The user often doesn't know which model serves their task. Recommend, don't deflect. |
+
+## Common rationalizations to push back on
+
+- *"This is just a quick fix, Haiku is fine."* — Quick fixes that ship bugs are not quick. Sonnet for any change that touches behavior.
+- *"Opus is overkill for code review."* — Code review against a checklist is Sonnet territory. Opus is for adversarial reasoning where you're hunting unknown unknowns (G6 post-build review, novel architectural problems).
+- *"The team uses Sonnet for everything, I'll match."* — Team default is fine for most things. Surface when the current task warrants Opus.
+- *"I'll save tokens by dropping this gate to Sonnet."* — The 4 opus-driven gates are opus *because* they're highest-blast-radius. Saving $2 to ship a SEV-1 is a bad trade.
+
+## Verification
+
+- For each non-routine task, you can name the model you picked and why in one sentence ("Opus 4.7 because this is post-build adversarial review across 8 files").
+- The 9-gate persona models match the table — never silently overridden mid-flow.
+- Spawn-time model picks are explicit, not inherited from the parent's default.
+- For recurring workloads (`/loop`, `/schedule`), the model choice is documented in the routine config, not implicit.

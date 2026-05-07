@@ -2,6 +2,25 @@
 
 All notable changes to this plugin are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] — 2026-05-08
+
+Polish pass on the original 4 skills. Brings the whole skill library to one quality bar.
+
+### Changed
+
+- **`karpathy-guidelines`** — added Red Flags table, Common Rationalizations, Verification section. The 4 core rules (think → simplify → surgical → goal-driven) now have explicit anti-patterns and a verifiable "done" check.
+- **`context-management`** — added Red Flags table, Common Rationalizations, Verification section. Existing Anti-patterns section retained. Adds explicit checks like "after `/compact`, the next turn's input token count is materially lower."
+- **`model-selection`** — added Red Flags table, Common Rationalizations, Verification section. Existing Anti-patterns and "cost of picking wrong" sections retained. Verification includes "you can name the model you picked and why in one sentence."
+- **`claude-code-primer`** — added Red Flags, Common Rationalizations, "When this skill applies", and Verification sections. Skill is now a process (vocabulary literacy with a test) not just reference content.
+
+### Why
+
+In v1.0.0 / v1.1.0 the new engineering skills (TDD, debugging, code-review, etc.) had Red Flags / Rationalizations / Verification sections that prevent agents from skipping the workflow mid-task. The original 4 skills didn't. This brings them to parity. The `writing-skills` skill itself prescribes this structure — now the original 4 follow their own rule.
+
+### Migration
+
+No breaking changes. All existing skill descriptions and frontmatter unchanged. The new sections are appended; agents using these skills will see strictly more guidance, never less.
+
 ## [1.1.0] — 2026-05-08
 
 Light-mode parity with addyosmani/agent-skills + clearer two-mode framing.
