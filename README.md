@@ -66,6 +66,18 @@ Spawns the 6 persona agents through 9 gates. Each gate produces a Decision Recor
 
 ## Install
 
+### Option A: Manual clone (most reliable)
+
+Works regardless of SSH config. In your terminal:
+
+```bash
+git clone https://github.com/AsifNewaz001/claude-code-prod-starter.git ~/.claude/plugins/claude-code-prod-starter
+```
+
+Then restart Claude Code. The plugin files end up exactly where Claude Code looks for them.
+
+### Option B: `/plugin install` (uses marketplace UI)
+
 In Claude Code, type these at the prompt (not as a chat message):
 
 ```
@@ -73,18 +85,21 @@ In Claude Code, type these at the prompt (not as a chat message):
 /plugin install claude-code-prod-starter@claude-code-prod-starter
 ```
 
+When the install scope menu appears, pick **"Install for you (user scope)"** so the plugin is available across all your projects.
+
 > **SSH `Permission denied (publickey)` error?**
-> Claude Code's marketplace defaults to SSH cloning. If your SSH keys aren't set up for GitHub in the same context Claude Code runs in, the install fails. Force HTTPS instead:
+> Claude Code's plugin install defaults to SSH cloning. If your SSH keys aren't loaded in the context Claude Code runs in, the install fails *even if `git push` works in your normal terminal*. Two fixes:
 >
-> ```
-> /plugin marketplace remove claude-code-prod-starter
-> /plugin marketplace add https://github.com/AsifNewaz001/claude-code-prod-starter.git
-> /plugin install claude-code-prod-starter@claude-code-prod-starter
-> ```
+> 1. **Easiest**: use Option A (manual clone) above.
+> 2. **Or**: force the marketplace to HTTPS:
+>    ```
+>    /plugin marketplace remove claude-code-prod-starter
+>    /plugin marketplace add https://github.com/AsifNewaz001/claude-code-prod-starter.git
+>    /plugin install claude-code-prod-starter@claude-code-prod-starter
+>    ```
+>    The HTTPS fix doesn't always stick because the plugin's marketplace.json may still resolve to SSH for the actual clone. If it fails, fall back to Option A.
 
-When the install scope menu appears, pick **"Install for you (user scope)"** so the plugin is available across all your projects (`~/.claude/plugins/claude-code-prod-starter/`).
-
-**Then restart Claude Code** (`/quit`, then `claude` again). Plugin agents, skills, and slash commands only register on session start.
+**After install, restart Claude Code** (`/quit`, then `claude` again). Plugin agents, skills, and slash commands only register on session start.
 
 ### Verify install
 

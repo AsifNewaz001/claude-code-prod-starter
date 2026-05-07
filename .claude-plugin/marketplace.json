@@ -12,7 +12,8 @@
       "name": "claude-code-prod-starter",
       "source": {
         "source": "github",
-        "repo": "AsifNewaz001/claude-code-prod-starter"
+        "repo": "AsifNewaz001/claude-code-prod-starter",
+        "protocol": "https"
       },
       "description": "Production-grade Claude Code starter: PM-style governance + SDLC skills + reusable specialist agents + auto-loading dispatcher."
     }
