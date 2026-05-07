@@ -70,19 +70,40 @@ These are *task-focused* agents you call ad-hoc. No persona, no gate ownership.
 | `security-auditor` | When the change touches auth, data flow, payments, file uploads, or external input. OWASP-aligned. |
 | `test-engineer` | When test coverage is uncertain, when a bug needs reproduction-first, or when designing a test plan. |
 
+## Two workflow modes
+
+Pick one per task, not per project.
+
+**Light mode (default for most work):**
+
+```
+/spec → /plan → /build → /test → /review → /code-simplify → /ship
+```
+
+No persona agents. No `PROJECT_CONTEXT.md` required. Closest to the addyosmani/agent-skills pattern. Use for the 90% of work that doesn't need committee review.
+
+**Full mode (high blast radius):**
+
+```
+/autopilot
+```
+
+Spawns the 6 persona agents through 9 gates. Each gate produces a Decision Record. Self-review forbidden. Use for auth, payments, multi-tenant changes, regulated data — anything where a senior engineer would want a structured review before it ships.
+
+**Rule of thumb:** if you'd want a review meeting before it ships, run `/autopilot`. Otherwise the lifecycle commands.
+
 ## Slash commands
 
-Lifecycle commands map to the SDLC. Each one activates the right skills automatically.
-
-| Command | Phase | Key principle |
-|---|---|---|
-| `/spec` | Define | Spec before code |
-| `/plan` | Plan | Atomic, testable tasks |
-| `/build` | Build | TDD, one slice at a time |
-| `/test` | Verify | Tests are proof |
-| `/review` | Review | Five-axis quality gate |
-| `/ship` | Ship | Faster is safer |
-| `/autopilot` | Full flow | 9-gate governance, end to end |
+| Command | Phase | Mode | Key principle |
+|---|---|---|---|
+| `/spec` | Define | light | Spec before code |
+| `/plan` | Plan | light | Atomic, testable tasks |
+| `/build` | Build | light | TDD, one slice at a time |
+| `/test` | Verify | light | Tests are proof |
+| `/review` | Review | light | Five-axis quality gate |
+| `/code-simplify` | Simplify | light | Clarity over cleverness, no behavior change |
+| `/ship` | Ship | light | Faster is safer |
+| `/autopilot` | Full flow | full | 9-gate governance, end to end |
 
 ## Skill list (this plugin)
 
@@ -93,7 +114,9 @@ Process skills:
 - `systematic-debugging` — reproduce → bisect → fix → regression test
 - `verification-before-completion` — never claim done without evidence
 - `code-review` — five-axis review before merge
+- `code-simplification` — reduce complexity without changing behavior
 - `writing-skills` — authoring a new skill for this plugin
+- `worktree-workflow` — git worktrees for parallel agent work
 
 Knowledge skills:
 - `context-management` — `/compact`, subagent budgets, cache TTL

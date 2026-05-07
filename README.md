@@ -22,11 +22,45 @@ You get: governance flow + SDLC skills + reusable specialists + auto-loading dis
 |---|---|---|
 | **Persona agents** | 6 | design, cpo, cto, cbo, lead-engineer, lead-qa — drive the 9-gate governance flow |
 | **Specialist agents** | 3 | code-reviewer, security-auditor, test-engineer — reusable, ad-hoc, no flow |
-| **Skills** | 10 | TDD, debugging, verification, code review, writing skills, worktree workflow, Karpathy guidelines, context management, model selection, primer + 1 dispatcher |
-| **Slash commands** | 7 | `/spec`, `/plan`, `/build`, `/test`, `/review`, `/ship` (lifecycle) + `/autopilot` (full 9-gate flow) |
+| **Skills** | 12 | TDD, debugging, verification, code review, code simplification, writing skills, worktree workflow, Karpathy guidelines, context management, model selection, primer + 1 dispatcher |
+| **Slash commands** | 8 | `/spec`, `/plan`, `/build`, `/test`, `/review`, `/code-simplify`, `/ship` (lifecycle) + `/autopilot` (full 9-gate flow) |
 | **Hook** | 1 | SessionStart — auto-injects the dispatcher so Claude knows what's available |
 | **Templates** | 6 | CLAUDE.md, AGENTS.md, PROJECT_CONTEXT.md, HANDOFF.md, governance-plan.md, agent-budgets.md |
 | **Onboarding docs** | 5 | 5–8 min each — primer, first day, model selection, context management, pitfalls |
+
+---
+
+## Two modes — pick what fits
+
+This plugin ships both a **light mode** (addy-style SDLC commands, no governance) and a **full mode** (9-gate persona-driven flow). Same install, different commands.
+
+### Light mode — for everyday work
+
+No templates to copy. No `PROJECT_CONTEXT.md` to fill in. Just install and use:
+
+```
+/spec  →  /plan  →  /build  →  /test  →  /review  →  /code-simplify  →  /ship
+```
+
+Plus three specialist agents you spawn ad-hoc:
+
+- `code-reviewer` — five-axis review before merge
+- `security-auditor` — OWASP-aligned audit when auth/payments/uploads touched
+- `test-engineer` — coverage audit + regression test design
+
+This is the **addyosmani/agent-skills** pattern, baked in. Use it for the 90% of work that doesn't need committee review.
+
+### Full mode — for high-blast-radius work
+
+Copy the templates. Fill `PROJECT_CONTEXT.md` (one-time, ~15 min). Then:
+
+```
+/autopilot
+```
+
+Spawns the 6 persona agents through 9 gates. Each gate produces a Decision Record. Self-review forbidden. Use it for auth flows, payment paths, multi-tenant changes, anything regulated.
+
+**Rule of thumb:** if a senior engineer would want a structured review meeting before this ships, run full mode. Otherwise light mode.
 
 ---
 
@@ -101,6 +135,7 @@ If you want to override — *"don't use TDD on this prototype"* — say so. User
 | `/build` | Build | Work the plan one task at a time, TDD throughout. |
 | `/test` | Verify | Run verify command + exercise feature in real runtime + edge case audit. |
 | `/review` | Review | Five-axis review (correctness, readability, architecture, security, performance). |
+| `/code-simplify` | Simplify | Reduce nesting, kill duplication, improve names — no behavior change. |
 | `/ship` | Ship | Pre-merge checks + commit hygiene + PR description + deploy notes. |
 | `/autopilot` | Full flow | Run all 9 governance gates end-to-end. Spawns the 6 persona agents. |
 
@@ -173,6 +208,7 @@ These are task-focused. No persona, no gate ownership. Spawn ad-hoc.
 | `systematic-debugging` | Reproduce, isolate, bisect, fix the cause, regression test. |
 | `verification-before-completion` | Never claim done without evidence. |
 | `code-review` | Five-axis review before merge. |
+| `code-simplification` | Reduce complexity without changing behavior. |
 | `writing-skills` | Author or edit a skill for this plugin. |
 | `worktree-workflow` | Git worktrees for parallel agent work and safe `/autopilot` runs. |
 
@@ -276,6 +312,7 @@ claude-code-prod-starter/
 │   ├── build.md                   # /build — build
 │   ├── test.md                    # /test — verify
 │   ├── review.md                  # /review — review
+│   ├── code-simplify.md           # /code-simplify — refactor for clarity
 │   └── ship.md                    # /ship — ship
 ├── skills/
 │   ├── using-prod-starter/        # dispatcher (auto-loaded by hook)
@@ -284,6 +321,7 @@ claude-code-prod-starter/
 │   ├── systematic-debugging/
 │   ├── verification-before-completion/
 │   ├── code-review/
+│   ├── code-simplification/
 │   ├── writing-skills/
 │   ├── worktree-workflow/
 │   ├── context-management/

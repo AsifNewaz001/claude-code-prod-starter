@@ -2,6 +2,25 @@
 
 All notable changes to this plugin are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] — 2026-05-08
+
+Light-mode parity with addyosmani/agent-skills + clearer two-mode framing.
+
+### Added
+
+- **`/code-simplify` command** — refactor for clarity without changing behavior. Reduces nesting, kills duplication, improves names.
+- **`code-simplification` skill** — five-principle simplification process (behavior must not change, incremental, names matter most, inline before extract, delete fearlessly).
+
+### Changed
+
+- **README.md** — added "Two modes" section near the top making the light-mode (addy-style lifecycle commands) vs full-mode (9-gate persona flow) distinction explicit. Counts updated: skills 11→12, commands 7→8.
+- **Dispatcher skill (`using-prod-starter`)** — added "Two workflow modes" section so Claude routes the right way per task. Skill list and command table both updated.
+- **`plugin.json`** — version 1.0.0 → 1.1.0. Description now mentions both modes.
+
+### Why
+
+Initial v1.0.0 shipped both modes but buried the light-mode story under the 9-gate flow. Some users want the full governance; many just want the addyosmani-style SDLC commands. Same plugin now serves both clearly.
+
 ## [1.0.0] — 2026-05-08
 
 First production-grade release. Complete restructure to match the bar set by addyosmani/agent-skills and obra/superpowers.
