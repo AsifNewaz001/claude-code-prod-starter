@@ -2,6 +2,29 @@
 
 All notable changes to this plugin are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.1] — 2026-05-08
+
+Hotfix: convert `agents` and `commands` in `plugin.json` to the new array-of-paths schema. The old directory-string form (`"./agents"`) was deprecated by Claude Code's plugin manager and now causes `/doctor` to flag the plugin as invalid, blocking installs.
+
+### Fixed
+
+- **`.claude-plugin/plugin.json`** — `agents` and `commands` are now arrays of explicit file paths (matching the format used by `vercel` and other working official plugins). `skills` stays as `"./skills"` since each skill is a directory, not a single file.
+
+### Why this matters
+
+- Users who tried `/plugin install claude-code-prod-starter@claude-code-prod-starter` after marketplace add saw `/doctor` errors about the manifest format. The install would partially succeed (files copied, registry entry added) but commands didn't load.
+- This release ships the corrected manifest. Fresh installs from `main` after this commit work without manual fixing.
+
+### If you already manually installed v2.0.0
+
+The local copy at `~/.claude/plugins/cache/claude-code-prod-starter/claude-code-prod-starter/2.0.0/.claude-plugin/plugin.json` may have already been hand-fixed (per support thread). To pick up this clean version:
+
+```bash
+update-prod-starter
+```
+
+Then re-clone via `/plugin install` (which now succeeds) or manually copy the corrected manifest from `~/.claude/plugins/marketplaces/claude-code-prod-starter/.claude-plugin/plugin.json` to your install path.
+
 ## [2.0.0] — 2026-05-08
 
 **Type your idea. Get a shipped PR.** Major repositioning around `/go` — the auto-orchestrator that makes the plugin noob-friendly out of the box. After install, the user types one sentence; the plugin runs the full SDLC. Power users still get surgical control via the lifecycle commands.
