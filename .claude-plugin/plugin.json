@@ -1,7 +1,7 @@
 {
   "name": "claude-code-prod-starter",
   "description": "Type your idea, get a shipped PR. The Claude Code plugin that orchestrates 9 agents, 14 skills, and 11 commands automatically. /go <one sentence> runs the full SDLC end-to-end — auto-bootstraps PROJECT_CONTEXT.md, detects intent and blast radius, picks light or full mode, spawns specialist agents at the right moments, pauses only at meaningful checkpoints (spec, plan, ship). Six token-discipline hooks land 35-55% real-world savings vs naive use. Includes /autopilot 9-gate governance for high-stakes work, /diagnose for transparency, /compress for surgical context compaction, and a 5-doc onboarding path. Project-agnostic. Zero-config for noobs; surgical control for pros.",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "author": {
     "name": "Asif Newaz",
     "email": "dbaricorp@gmail.com"

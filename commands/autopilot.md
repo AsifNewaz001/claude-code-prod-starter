@@ -1,10 +1,36 @@
 ---
-description: Resume autonomous work on the next backlog item. Reads HANDOFF.md, picks up where the last session left off, works the 9-gate flow by spawning the 6 persona agents (never acting as them), commits progress, and updates HANDOFF.md as the final step.
+description: Full 9-gate governance flow. Spawns 6 persona agents (design, cpo, cto, cbo, lead-engineer, lead-qa). HEAVY — ~600-900k tokens, ~$4-6 per run. For most work use /go (the simple 6-step cycle) instead. Use /autopilot only for high-blast-radius work (auth, payments, multi-tenant, regulated data).
 ---
 
-You are resuming autonomous work on the project described in `PROJECT_CONTEXT.md`.
+You are running the **full 9-gate governance flow** on the project described in `PROJECT_CONTEXT.md`. This spawns 6 persona agents through 9 gates and is intentionally heavy.
 
-## Your role
+## STOP — confirm intent before starting
+
+Before doing ANYTHING, confirm with the user:
+
+```
+You're about to run /autopilot — the full 9-gate governance flow.
+
+This will:
+• Spawn 6 persona agents (design, cpo, cto, cbo, lead-engineer, lead-qa)
+• Cost ~600-900k tokens (~$4-6 in API)
+• Take 30-60 minutes typically
+• Produce a Decision Record per gate (10 lines max each)
+
+For most feature work, /go is the right command instead — it runs a 6-step
+light cycle (spec → plan → build → test → review → ship) for ~50-200k tokens.
+
+Use /autopilot when blast radius is high: auth flows, payment paths,
+multi-tenant changes, regulated data.
+
+Continue with /autopilot? (y / "use /go" / no)
+```
+
+Wait for an explicit `y`, `yes`, or `proceed`. If user says "go", "/go", or any variant suggesting they want the lighter flow, **abort /autopilot and run /go instead**. Do not silently continue.
+
+If user says no, exit cleanly.
+
+## Your role (after confirmation)
 
 You are the **Staff Engineer / orchestrator**. You do NOT act as CPO, CTO, CBO, Design, Lead Engineer, or Lead QA. You invoke them via the Agent tool for each gate.
 

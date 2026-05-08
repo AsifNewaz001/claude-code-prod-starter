@@ -2,6 +2,31 @@
 
 All notable changes to this plugin are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.2] — 2026-05-08
+
+Hotfix: prevent `/autopilot` from silently spawning the heavy 9-gate persona flow when the user actually wanted the lighter `/go` cycle.
+
+### Fixed
+
+- **`/autopilot`** — now starts with a mandatory confirmation prompt that explicitly states cost (~600-900k tokens, ~$4-6), agent count (6 personas), and offers `/go` as the lighter alternative. Will NOT spawn any persona agent until user replies `y` / `yes` / `proceed`. If user says "go" or any variant suggesting they want light mode, aborts cleanly and runs `/go` instead.
+- **Dispatcher (`using-prod-starter`)** — adds a CRITICAL section explicitly distinguishing `/go` from `/autopilot` with side-by-side comparison (token cost, agent count, time, use case). Tells Claude: if user typed "autopilot" but the request is routine, STOP and ask which they meant.
+
+### Why this matters
+
+Real user hit this: typed `/plugin autopilot like the one in /go` (conflating the words). Plugin spawned design-agent then cpo-agent (G1, G2 of the 9-gate flow) before the user interrupted. ~30k+ tokens wasted on the wrong flow.
+
+Root cause: nothing in `/autopilot` warned about its weight or offered to redirect. Description said "9-gate flow" but didn't say cost or contrast it with `/go`. Easy mistake.
+
+### What changed under the hood
+
+- `commands/autopilot.md` — adds a confirmation gate at the very top before any agent spawn.
+- `commands/autopilot.md` — description now leads with "HEAVY — ~600-900k tokens, ~$4-6 per run" and points to `/go` for routine work.
+- `skills/using-prod-starter/SKILL.md` — adds "CRITICAL: `/go` ≠ `/autopilot`" section with the comparison table and an explicit "if user typed autopilot but meant /go, ask" instruction.
+
+### Migration
+
+No breaking changes. Existing scheduled `/autopilot` runs will see the confirmation prompt — answer `y` to keep going (or `/go` to switch to the light flow). After this version, you'll never accidentally spawn 6 persona agents when you meant the 6-step cycle.
+
 ## [2.0.1] — 2026-05-08
 
 Hotfix: convert `agents` and `commands` in `plugin.json` to the new array-of-paths schema. The old directory-string form (`"./agents"`) was deprecated by Claude Code's plugin manager and now causes `/doctor` to flag the plugin as invalid, blocking installs.
