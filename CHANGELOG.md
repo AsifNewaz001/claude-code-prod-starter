@@ -2,6 +2,55 @@
 
 All notable changes to this plugin are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] — 2026-05-08
+
+**Type your idea. Get a shipped PR.** Major repositioning around `/go` — the auto-orchestrator that makes the plugin noob-friendly out of the box. After install, the user types one sentence; the plugin runs the full SDLC. Power users still get surgical control via the lifecycle commands.
+
+### Added
+
+- **`/go` command** — the new default entry point. Reads the user's request, auto-bootstraps `PROJECT_CONTEXT.md` if missing, detects intent (FEATURE / DEBUG / REVIEW / SIMPLIFY / EXPLAIN), detects blast radius (auth/payment/migration → high), picks light or full mode, runs the appropriate flow, spawns specialist agents at the right moments, and pauses only at three human-in-the-loop checkpoints (spec, plan, ship). Inlines the lifecycle commands so the user doesn't have to type them.
+
+- **`auto-context` skill** — auto-generates a minimal `PROJECT_CONTEXT.md` from manifest files (`package.json`, `pyproject.toml`, `Cargo.toml`, `go.mod`, etc.). Detects stack and verify command. Leaves residency / brand / project-type as TODOs for the user to fill. Used by `/go` so noobs don't hit the missing-context-file wall on first use.
+
+- **`/diagnose` command** — read-only transparency tool. Shows plugin version, active hooks, available agents/skills/commands, current project state, recent token telemetry, and (if you pass a request) what `/go` would do. For when you're confused about what the plugin is set up to do.
+
+### Changed
+
+- **`README.md`** — major rewrite with viral positioning. Leads with the demo (`/go add dark mode` → PR in 8 min), comparison table vs Codex/Cursor/Gemini/Aider, two-mode framing (light default for `/go`, full for `/autopilot`), realistic savings math, and a clear "what this is NOT" section. Counts updated: skills 13→14, commands 9→11.
+
+- **`skills/using-prod-starter/SKILL.md`** — `/go` is now featured as the DEFAULT entry point at the top of the dispatcher. Slash command table reorganized with `/go` first. Skill discovery flowchart updated to route to `/go` for ambiguous requests. Skill list updated with `auto-context`.
+
+- **`plugin.json`** — bumped to **2.0.0**. Description rewritten around the "type your idea, get a PR" pitch.
+
+### Why 2.0.0 (not 1.5.0)
+
+The plugin's positioning has shifted. v1.x was "the plugin you install if you're already advanced enough to know which slash command to type." v2.0 is "the plugin you install when you want Claude Code to feel like magic, even if you've never written a slash command." That's a major shift in target audience and default UX, even though the under-the-hood machinery (skills, agents, hooks) is mostly unchanged.
+
+Major version reflects:
+- New default user experience (`/go` is the entry point, not `/autopilot` or `/spec`)
+- New mandatory bootstrap path (`auto-context` removes the manual `PROJECT_CONTEXT.md` requirement for light mode)
+- New positioning vs other AI coding tools (comparison table, "viral" pitch)
+
+### Migration from v1.4.0
+
+No breaking changes for existing users. All v1.x commands, skills, agents, hooks still work exactly as before.
+
+What's new for existing users:
+- Try `/go fix the X bug` instead of running `/spec` → `/plan` → `/build` manually.
+- Try `/diagnose` to see everything the plugin has loaded.
+
+What's new for noobs (the new target audience):
+- Install. Restart. Type `/go <anything>`. The plugin handles the rest.
+
+### Roadmap signals (not in this release)
+
+- True payload-level compression equivalent to OpenCode-DCP — requires Anthropic to expand Claude Code's plugin API.
+- Native tool-result deduplication in the API request — same blocker.
+- Custom tools the model can invoke (e.g. a `compress` tool model picks autonomously) — same blocker.
+- Multi-harness sync (`.codex-plugin/`, `.cursor-plugin/`) — buildable but deferred.
+
+For workloads where token cost dominates, OpenCode + DCP remains a better fit. This plugin's value is workflow + governance + auto-orchestration, with token discipline as a strong supporting feature.
+
 ## [1.4.0] — 2026-05-08
 
 OpenCode-DCP approximations. Three new hooks and one new slash command bring the plugin closer to DCP's behavior, within Claude Code's plugin-API limits.

@@ -6,7 +6,15 @@ license: MIT
 
 # Using claude-code-prod-starter
 
-This plugin is a complete production engineering kit for Claude Code: governance flow + SDLC skills + reusable specialists + lifecycle commands. This dispatcher routes any incoming task to the right primitive.
+This plugin is a complete production engineering kit for Claude Code: an auto-orchestrator + governance flow + SDLC skills + reusable specialists + lifecycle commands. This dispatcher routes any incoming task to the right primitive.
+
+## DEFAULT: when in doubt, run `/go`
+
+**`/go <user's request>`** is the auto-orchestrator. It detects intent, picks light vs full mode, runs the right flow, spawns specialist agents at the right moments, and pauses only at meaningful checkpoints (spec, plan, ship). It IS the noob-friendly entry point.
+
+If a user types something that sounds like a build/fix/review task and they haven't picked a specific command, run `/go`. Don't make them learn the lifecycle commands first.
+
+The other commands (`/spec`, `/plan`, `/build`, etc.) are still there for power users who want surgical control. But `/go` is the default.
 
 ## The Rule
 
@@ -29,19 +37,22 @@ In Claude Code, use the `Skill` tool. When invoked, the skill content loads — 
 ```
 Task arrives
     │
-    ├── Vague idea, unclear scope? ────────────→ /spec or G1–G2 (design + cpo agents)
-    ├── Have a spec, need a plan? ─────────────→ /plan or G3 (cto agent)
+    ├── User typed /go ────────────────────────→ /go orchestrator (DEFAULT)
+    ├── Project missing PROJECT_CONTEXT.md? ───→ auto-context skill
+    ├── Vague idea, unclear scope? ────────────→ /spec (or just /go and let it route)
+    ├── Have a spec, need a plan? ─────────────→ /plan
     ├── About to write production code? ───────→ test-driven-development (always)
-    │   └── Multi-step build? ────────────────→ /build or G5 (lead-engineer agent)
+    │   └── Multi-step build? ────────────────→ /build
     ├── Something broken / unexpected output? ─→ systematic-debugging
     ├── Implementation done, ready to claim? ──→ verification-before-completion (always)
     ├── Reviewing finished code? ──────────────→ code-review skill, or code-reviewer agent
     │   ├── Security concerns? ───────────────→ security-auditor agent
     │   └── Test coverage concerns? ──────────→ test-engineer agent
-    ├── Long session, context filling up? ─────→ context-management
+    ├── Long session, context filling up? ─────→ /compress (or context-management skill)
+    ├── Token spend high? ─────────────────────→ token-discipline skill
     ├── Picking which model? ──────────────────→ model-selection
     ├── Authoring a new skill for this plugin? ─→ writing-skills
-    ├── New to Claude Code? ───────────────────→ claude-code-primer
+    ├── New to Claude Code / confused? ────────→ claude-code-primer or /diagnose
     └── Production feature, full governance? ──→ /autopilot (the 9-gate flow)
 ```
 
@@ -96,6 +107,8 @@ Spawns the 6 persona agents through 9 gates. Each gate produces a Decision Recor
 
 | Command | Phase | Mode | Key principle |
 |---|---|---|---|
+| `/go` | Auto-orchestrate | both | **DEFAULT.** One sentence to PR. Routes intent, picks mode, runs the flow. |
+| `/diagnose` | Inspect | — | Show what's installed, what's active, what `/go <X>` would do |
 | `/spec` | Define | light | Spec before code |
 | `/plan` | Plan | light | Atomic, testable tasks |
 | `/build` | Build | light | TDD, one slice at a time |
@@ -117,6 +130,7 @@ Process skills:
 - `code-review` — five-axis review before merge
 - `code-simplification` — reduce complexity without changing behavior
 - `token-discipline` — reduce token spend on tool dumps, subagent spawns, and stale context
+- `auto-context` — auto-generate PROJECT_CONTEXT.md from manifests (used by /go)
 - `writing-skills` — authoring a new skill for this plugin
 - `worktree-workflow` — git worktrees for parallel agent work
 

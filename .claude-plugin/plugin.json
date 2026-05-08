@@ -1,7 +1,7 @@
 {
   "name": "claude-code-prod-starter",
-  "description": "Production-grade Claude Code starter for engineering teams adopting Opus 4.7. Two workflow modes — light (lifecycle commands, no governance) and full (9-gate persona-driven flow). Six PM-style persona agents, three reusable specialist agents (code-reviewer, security-auditor, test-engineer), full SDLC skill library (TDD, debugging, verification, code review, code simplification, token discipline, context management, model selection, Karpathy guidelines), eight slash commands, session-start hook with meta-skill auto-injection, three token-discipline hooks (bash-output guard, subagent-prompt guard, telemetry log), and a 5-doc onboarding path. Project-agnostic.",
-  "version": "1.4.0",
+  "description": "Type your idea, get a shipped PR. The Claude Code plugin that orchestrates 9 agents, 14 skills, and 11 commands automatically. /go <one sentence> runs the full SDLC end-to-end — auto-bootstraps PROJECT_CONTEXT.md, detects intent and blast radius, picks light or full mode, spawns specialist agents at the right moments, pauses only at meaningful checkpoints (spec, plan, ship). Six token-discipline hooks land 35-55% real-world savings vs naive use. Includes /autopilot 9-gate governance for high-stakes work, /diagnose for transparency, /compress for surgical context compaction, and a 5-doc onboarding path. Project-agnostic. Zero-config for noobs; surgical control for pros.",
+  "version": "2.0.0",
   "author": {
     "name": "Asif Newaz",
     "email": "dbaricorp@gmail.com"
