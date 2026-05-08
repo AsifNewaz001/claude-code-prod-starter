@@ -115,6 +115,7 @@ Process skills:
 - `verification-before-completion` — never claim done without evidence
 - `code-review` — five-axis review before merge
 - `code-simplification` — reduce complexity without changing behavior
+- `token-discipline` — reduce token spend on tool dumps, subagent spawns, and stale context
 - `writing-skills` — authoring a new skill for this plugin
 - `worktree-workflow` — git worktrees for parallel agent work
 
@@ -133,6 +134,20 @@ Knowledge skills:
 | "This is a one-line change" | One-line changes are where the worst bugs hide. Invoke the skill. |
 | "I'll write tests after" | "After" never comes. Tests ship in the same commit. |
 | "The user said be quick" | Quick is the result of discipline, not the absence of it. |
+
+## Token discipline hooks (auto-enforced)
+
+The plugin ships three hooks that fire automatically — you don't invoke them:
+
+| Hook | Fires when | Effect |
+|---|---|---|
+| `bash-output-discipline` | Bash output >200 lines or >10k chars | Injects a reminder with concrete suggestions for targeted commands next time |
+| `subagent-discipline` | About to spawn an Agent with a >2000 char prompt | Injects the tight-bundle pattern (static refs + dynamic delta + budget) |
+| `token-telemetry` | After every tool call | Logs a TSV line to `docs/agent-runs.log` for post-session analysis |
+
+If you see one of these reminders, take it seriously. They exist because the listed mistakes are the highest-leverage token-leak sources.
+
+For deeper guidance, invoke the `token-discipline` skill.
 
 ## Surface-and-ask discipline
 
