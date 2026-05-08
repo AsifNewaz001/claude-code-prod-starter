@@ -2,6 +2,52 @@
 
 All notable changes to this plugin are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] — 2026-05-08
+
+OpenCode-DCP approximations. Three new hooks and one new slash command bring the plugin closer to DCP's behavior, within Claude Code's plugin-API limits.
+
+### Added
+
+- **`hooks/auto-compact-suggest.sh`** (PostToolUse, all tools) — sums session tokens from the telemetry log. Suggests `/compact <focus>` at 75k tokens (soft) and 150k tokens (hard). Fires at most once per threshold per session. Closest equivalent to DCP's auto-trigger on task completion.
+- **`hooks/dedup-tracker.sh`** (PostToolUse on Read/Grep/Glob) — hashes tool_input and records it to `~/.claude/dedup-cache/<session>.log`. Cache trimmed to last 100 calls. Pure side effect, no Claude-visible output.
+- **`hooks/dedup-advisor.sh`** (PreToolUse on Read/Grep/Glob) — hashes incoming tool_input and checks the dedup cache. If matched within the last 50 entries of the same tool name, warns Claude that the same call was already made. Closest equivalent to DCP's tool-result dedup.
+- **`commands/compress.md`** — slash command that wraps `/compact` with a structured focus template (load-bearing decisions to keep, large outputs to drop, phase-completion marker). Closer to DCP's range-mode compress than blind `/compact`.
+
+### Changed
+
+- **`hooks/hooks.json`** — registers three new hooks across PostToolUse and PreToolUse.
+- **`skills/token-discipline/SKILL.md`** — expanded "plugin hooks" table to six entries. New "DCP gap analysis" table documenting which DCP capabilities this plugin approximates and which require harness-level support.
+- **`skills/using-prod-starter/SKILL.md`** — dispatcher's hook table expanded; slash command table now lists `/compress`.
+- **`README.md`** — "Token discipline" section expanded with the three new hooks, the `/compress` command, audit recipes, and an honest DCP comparison table. Counts updated: hooks 4→7, slash commands 8→9.
+- **`plugin.json`** — version 1.3.0 → 1.4.0.
+
+### Honest scope (the DCP gap)
+
+| OpenCode-DCP capability | This plugin | Why the gap |
+|---|---|---|
+| `compress` tool the model invokes when work closes | `/compress` slash command (user-invoked) | Claude Code can't expose custom tools to the model via plugin |
+| Range-mode payload compression with placeholders | `/compress` → wraps `/compact` (broad, lossy) | Claude Code hooks can't modify the API request |
+| Message-mode surgical compression | None | Same — no payload modification surface |
+| Automatic dedup of identical tool calls in payload | `dedup-advisor` warns BEFORE re-run | Hooks fire around tool calls, not on the API payload |
+| Error-input purge after N turns | None | Same — no payload modification |
+| Auto-trigger compress on task completion | `auto-compact-suggest` (token-threshold based) | Model can't auto-run `/compact` as a tool |
+
+Realistic savings stack with v1.4.0:
+- Light vs full mode: ~70-85% on non-governance work
+- Right model picks: 2-3× on routine code
+- Tight subagent bundles (nudged by hook): 50-70% per spawn
+- Output discipline (nudged by hook): 10-15% in heavy debug
+- Auto-compact-suggest + `/compress` discipline: 10-20% in long sessions
+- Dedup-advisor (skip identical re-reads): 5-10% in exploration-heavy work
+
+Compose with discipline: 35-55% in practice. ~30-50% of DCP's effect. The remaining 50-70% of DCP's effect requires Claude Code to expand its plugin API.
+
+### Migration
+
+No breaking changes. Existing v1.3.0 installs gain three hook files and one command. The dedup cache lives at `~/.claude/dedup-cache/` (one log per session, auto-trimmed). The auto-compact marker lives at `${TMPDIR:-/tmp}/cc-prod-starter/`.
+
+Windows users: hooks remain bash-only. Use WSL or Git Bash.
+
 ## [1.3.0] — 2026-05-08
 
 Token discipline hooks + skill. The plugin now actively nudges Claude toward better token discipline at the highest-leverage moments (bloated tool dumps, bloated subagent spawn prompts) and logs every tool call for post-session analysis.

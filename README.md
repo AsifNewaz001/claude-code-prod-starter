@@ -23,8 +23,8 @@ You get: governance flow + SDLC skills + reusable specialists + auto-loading dis
 | **Persona agents** | 6 | design, cpo, cto, cbo, lead-engineer, lead-qa — drive the 9-gate governance flow |
 | **Specialist agents** | 3 | code-reviewer, security-auditor, test-engineer — reusable, ad-hoc, no flow |
 | **Skills** | 13 | TDD, debugging, verification, code review, code simplification, token discipline, writing skills, worktree workflow, Karpathy guidelines, context management, model selection, primer + 1 dispatcher |
-| **Slash commands** | 8 | `/spec`, `/plan`, `/build`, `/test`, `/review`, `/code-simplify`, `/ship` (lifecycle) + `/autopilot` (full 9-gate flow) |
-| **Hooks** | 4 | SessionStart (dispatcher inject) + 3 token-discipline hooks (bash-output guard, subagent-prompt guard, telemetry log) |
+| **Slash commands** | 9 | `/spec`, `/plan`, `/build`, `/test`, `/review`, `/code-simplify`, `/compress`, `/ship` (lifecycle) + `/autopilot` (full 9-gate flow) |
+| **Hooks** | 7 | SessionStart (dispatcher) + 6 token-discipline hooks (bash-output, subagent-prompt, telemetry, auto-compact-suggest, dedup-tracker, dedup-advisor) |
 | **Templates** | 6 | CLAUDE.md, AGENTS.md, PROJECT_CONTEXT.md, HANDOFF.md, governance-plan.md, agent-budgets.md |
 | **Onboarding docs** | 5 | 5–8 min each — primer, first day, model selection, context management, pitfalls |
 
@@ -261,17 +261,24 @@ These are task-focused. No persona, no gate ownership. Spawn ad-hoc.
 
 ---
 
-## Token discipline (built-in hooks)
+## Token discipline (built-in hooks + DCP approximations)
 
-The plugin ships three PostToolUse / PreToolUse hooks that auto-fire to keep token spend in check:
+The plugin ships six hooks that auto-fire to keep token spend in check:
 
 | Hook | Fires when | What it does |
 |---|---|---|
-| `bash-output-discipline` | Bash output >200 lines or >10k chars | Injects a reminder suggesting `grep` / `head` / `tail` / scoped `find` for next time |
-| `subagent-discipline` | Agent spawn prompt >2000 chars | Injects the tight-bundle pattern (static refs + dynamic delta + budget reminder) |
-| `token-telemetry` | After every tool call | Appends a TSV line to `docs/agent-runs.log` (timestamp, tool, approx tokens) for post-session analysis |
+| `bash-output-discipline` | Bash output >200 lines or >10k chars | Reminder with targeted-command suggestions |
+| `subagent-discipline` | Agent spawn prompt >2000 chars | Injects tight-bundle pattern |
+| `token-telemetry` | Every tool call | TSV log to `docs/agent-runs.log` |
+| `auto-compact-suggest` | Session tokens cross 75k / 150k | Suggests `/compact <focus>` |
+| `dedup-tracker` | After Read/Grep/Glob | Records call hash to per-session cache |
+| `dedup-advisor` | Before Read/Grep/Glob | Warns if you already ran the exact same call |
 
-After a long session, audit your log:
+Plus `/compress` — a slash command that wraps `/compact` with a structured focus template, telling Claude exactly what to keep and what to drop. Closer to OpenCode-DCP's range-mode compress than blind `/compact`.
+
+### Auditing your token spend
+
+After a long session:
 
 ```bash
 # Total tokens today:
@@ -279,9 +286,24 @@ awk -F'\t' -v today=$(date -u +%Y-%m-%d) '$1 ~ today {input+=$4; output+=$5} END
 
 # Heaviest single tool calls:
 sort -k5 -n -r docs/agent-runs.log | head -10
+
+# Tool count per session:
+awk -F'\t' '{print $2}' docs/agent-runs.log | sort | uniq -c | sort -rn
 ```
 
-The hooks are advisory, not enforcement — they can warn but can't rewrite the tool result Claude already received. For real RTK-style proxy compression, see external tools like 9router. The hooks plus the `token-discipline` skill plus user discipline land roughly 30-50% savings vs naive use.
+### Honest scope vs OpenCode-DCP
+
+DCP modifies the API request payload — it can compress ranges, dedupe tool results, and purge errored inputs at the wire. Claude Code's plugin API can't do that. The plugin's hooks can only **warn** and **advise**.
+
+| OpenCode-DCP | This plugin's approximation |
+|---|---|
+| `compress` tool the model invokes | `/compress` slash command (user-invoked) |
+| Range-mode payload compression | `/compress` → `/compact <focus>` (broader, lossier) |
+| Automatic tool-result dedup | `dedup-advisor` warns BEFORE re-run |
+| Auto-trigger on task completion | `auto-compact-suggest` fires at token thresholds |
+| Error-input purge in payload | None — gap |
+
+The hooks land ~30-50% of DCP's effect. The remaining 50-70% requires Claude Code to expand its plugin API. For workloads where token cost dominates, OpenCode + DCP is a better fit; this plugin's value is workflow + governance, not payload compression.
 
 ---
 

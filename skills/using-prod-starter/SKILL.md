@@ -102,6 +102,7 @@ Spawns the 6 persona agents through 9 gates. Each gate produces a Decision Recor
 | `/test` | Verify | light | Tests are proof |
 | `/review` | Review | light | Five-axis quality gate |
 | `/code-simplify` | Simplify | light | Clarity over cleverness, no behavior change |
+| `/compress` | Context | both | Surgical context compression (structured `/compact` wrapper) |
 | `/ship` | Ship | light | Faster is safer |
 | `/autopilot` | Full flow | full | 9-gate governance, end to end |
 
@@ -137,15 +138,20 @@ Knowledge skills:
 
 ## Token discipline hooks (auto-enforced)
 
-The plugin ships three hooks that fire automatically — you don't invoke them:
+The plugin ships six hooks that fire automatically — you don't invoke them:
 
 | Hook | Fires when | Effect |
 |---|---|---|
-| `bash-output-discipline` | Bash output >200 lines or >10k chars | Injects a reminder with concrete suggestions for targeted commands next time |
-| `subagent-discipline` | About to spawn an Agent with a >2000 char prompt | Injects the tight-bundle pattern (static refs + dynamic delta + budget) |
-| `token-telemetry` | After every tool call | Logs a TSV line to `docs/agent-runs.log` for post-session analysis |
+| `bash-output-discipline` | Bash output >200 lines or >10k chars | Reminder with targeted-command suggestions |
+| `subagent-discipline` | Agent spawn prompt >2000 chars | Tight-bundle pattern injection |
+| `token-telemetry` | Every tool call | TSV log to `docs/agent-runs.log` for analysis |
+| `auto-compact-suggest` | Session tokens cross 75k/150k | Suggests `/compact <focus>` at threshold |
+| `dedup-tracker` | After Read/Grep/Glob | Records hash to `~/.claude/dedup-cache/<session>.log` |
+| `dedup-advisor` | Before Read/Grep/Glob | Warns if same call was made already this session |
 
-If you see one of these reminders, take it seriously. They exist because the listed mistakes are the highest-leverage token-leak sources.
+If you see one of these reminders, take it seriously. They mark the highest-leverage token-leak moments.
+
+The plugin also ships `/compress`, a slash command that wraps `/compact` with a structured focus template (closer to OpenCode-DCP's range-mode compress than blind `/compact`).
 
 For deeper guidance, invoke the `token-discipline` skill.
 
