@@ -66,13 +66,32 @@ Run `/compact` after a phase ends — debugging loop closed, requirements gather
 
 Opus 4.7 only on highest-blast-radius tasks. Sonnet 4.6 for everyday code. Haiku 4.5 for lookups and one-shot edits. See `model-selection` skill for the decision matrix.
 
-## The three plugin hooks (what they do)
+## The plugin hooks (what they do)
 
 | Hook | Trigger | Action |
 |---|---|---|
 | `bash-output-discipline` | After any Bash call | If output >200 lines or >10k chars, injects a reminder with concrete suggestions for next time. |
 | `subagent-discipline` | Before any Agent spawn | If prompt >2000 chars, injects the tight-bundle pattern. >5000 chars: stronger nag. |
 | `token-telemetry` | After every tool call | Logs a TSV line to `docs/agent-runs.log`: timestamp, session, tool, approx in/out tokens, cwd. Pure measurement, no Claude-visible output. |
+| `auto-compact-suggest` | After every tool call | Sums session tokens from telemetry log. Suggests `/compact <focus>` at 75k tokens (soft) and 150k tokens (hard). Fires at most once per threshold per session. |
+| `dedup-tracker` | After Read/Grep/Glob | Records a hash of the tool_input to `~/.claude/dedup-cache/<session>.log`. Cache trimmed to last 100 calls. |
+| `dedup-advisor` | Before Read/Grep/Glob | Hashes the incoming tool_input and checks the dedup cache. If matched within last 50 calls, warns Claude that the same call was already made — proceed only if the file/state likely changed. |
+
+## The /compress slash command
+
+`/compress` wraps `/compact` with a structured focus template. Closer to OpenCode-DCP's range-mode compress than blind `/compact`. Tells the model exactly what to keep (load-bearing decisions, current spec/plan) and what to drop (large tool outputs, completed exploration paths).
+
+Usage example:
+
+```
+/compress
+```
+
+Then the command tells Claude to construct a focus argument like:
+
+```
+/compact focus on G3 architecture decisions and the task list; drop G1 design exploration and large grep dumps
+```
 
 ## Reading the telemetry
 
@@ -108,9 +127,22 @@ After a long session, look at the heaviest entries. If most tokens are in Bash w
 
 ## What this skill does NOT promise
 
-- **No magic 65% savings.** Real savings are: ~70-85% from light vs full mode, ~2-3× from right model picks, ~20-30% from tight bundles, ~10-15% from output discipline. Compose with discipline; without discipline, the hooks just ping you.
-- **No automatic compression of tool results.** Claude Code hooks can warn but can't rewrite tool output streams. For RTK-style proxy compression, see external tools like 9router.
+- **No magic 65% savings.** Real savings are: ~70-85% from light vs full mode, ~2-3× from right model picks, ~20-30% from tight bundles, ~10-15% from output discipline, ~10-20% from auto-compact-suggest + dedup-advisor. Compose with discipline; without discipline, the hooks just ping you.
+- **No payload-level compression.** Claude Code's plugin API can't modify what gets sent to the LLM. Hooks can warn and inject system messages — they cannot rewrite tool result streams or drop ranges from the conversation history. For OpenCode-DCP's range/message compression at the API layer, you'd need OpenCode + DCP itself; this plugin's `dedup-advisor` and `auto-compact-suggest` are the closest approximations Claude Code allows.
 - **No Windows-native hook execution** in this version. Hooks are bash-only. Windows users need WSL or Git Bash.
+
+## DCP gap analysis
+
+| OpenCode-DCP capability | This plugin | Why the gap |
+|---|---|---|
+| `compress` tool the model invokes when work closes | `/compress` slash command (user-invoked) | Claude Code can't expose custom tools to the model via plugin |
+| Range-mode payload compression with placeholders | `/compress` → wraps `/compact` (broad, lossy) | Claude Code hooks can't modify the API request |
+| Message-mode surgical compression | None | Same reason — no payload modification surface |
+| Automatic dedup of identical tool calls in payload | `dedup-advisor` warns BEFORE re-run | Hooks fire around tool calls, not on the API payload |
+| Error-input purge after N turns | None | Same — no payload modification |
+| Auto-trigger compress on task-completion signals | `auto-compact-suggest` (token-threshold based) | We can suggest, the model can't auto-run `/compact` as a tool |
+
+The plugin lands ~30-50% of DCP's effect through advisory hooks. The remaining 50-70% requires harness-level support that Claude Code doesn't expose today.
 
 ## Verification
 

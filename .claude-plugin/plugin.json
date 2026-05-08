@@ -1,7 +1,7 @@
 {
   "name": "claude-code-prod-starter",
   "description": "Production-grade Claude Code starter for engineering teams adopting Opus 4.7. Two workflow modes — light (lifecycle commands, no governance) and full (9-gate persona-driven flow). Six PM-style persona agents, three reusable specialist agents (code-reviewer, security-auditor, test-engineer), full SDLC skill library (TDD, debugging, verification, code review, code simplification, token discipline, context management, model selection, Karpathy guidelines), eight slash commands, session-start hook with meta-skill auto-injection, three token-discipline hooks (bash-output guard, subagent-prompt guard, telemetry log), and a 5-doc onboarding path. Project-agnostic.",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "author": {
     "name": "Asif Newaz",
     "email": "dbaricorp@gmail.com"
