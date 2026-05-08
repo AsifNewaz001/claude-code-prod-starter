@@ -22,9 +22,9 @@ You get: governance flow + SDLC skills + reusable specialists + auto-loading dis
 |---|---|---|
 | **Persona agents** | 6 | design, cpo, cto, cbo, lead-engineer, lead-qa — drive the 9-gate governance flow |
 | **Specialist agents** | 3 | code-reviewer, security-auditor, test-engineer — reusable, ad-hoc, no flow |
-| **Skills** | 12 | TDD, debugging, verification, code review, code simplification, writing skills, worktree workflow, Karpathy guidelines, context management, model selection, primer + 1 dispatcher |
+| **Skills** | 13 | TDD, debugging, verification, code review, code simplification, token discipline, writing skills, worktree workflow, Karpathy guidelines, context management, model selection, primer + 1 dispatcher |
 | **Slash commands** | 8 | `/spec`, `/plan`, `/build`, `/test`, `/review`, `/code-simplify`, `/ship` (lifecycle) + `/autopilot` (full 9-gate flow) |
-| **Hook** | 1 | SessionStart — auto-injects the dispatcher so Claude knows what's available |
+| **Hooks** | 4 | SessionStart (dispatcher inject) + 3 token-discipline hooks (bash-output guard, subagent-prompt guard, telemetry log) |
 | **Templates** | 6 | CLAUDE.md, AGENTS.md, PROJECT_CONTEXT.md, HANDOFF.md, governance-plan.md, agent-budgets.md |
 | **Onboarding docs** | 5 | 5–8 min each — primer, first day, model selection, context management, pitfalls |
 
@@ -247,6 +247,7 @@ These are task-focused. No persona, no gate ownership. Spawn ad-hoc.
 | `verification-before-completion` | Never claim done without evidence. |
 | `code-review` | Five-axis review before merge. |
 | `code-simplification` | Reduce complexity without changing behavior. |
+| `token-discipline` | Reduce token spend on tool dumps, subagent spawns, stale context. Pairs with the 3 discipline hooks. |
 | `writing-skills` | Author or edit a skill for this plugin. |
 | `worktree-workflow` | Git worktrees for parallel agent work and safe `/autopilot` runs. |
 
@@ -257,6 +258,30 @@ These are task-focused. No persona, no gate ownership. Spawn ad-hoc.
 | `context-management` | When/how to `/compact`, subagent budgets, cache TTL. |
 | `model-selection` | Opus 4.7 / Sonnet 4.6 / Haiku 4.5 decision matrix. |
 | `claude-code-primer` | Agents vs skills vs commands vs hooks vs plugins. |
+
+---
+
+## Token discipline (built-in hooks)
+
+The plugin ships three PostToolUse / PreToolUse hooks that auto-fire to keep token spend in check:
+
+| Hook | Fires when | What it does |
+|---|---|---|
+| `bash-output-discipline` | Bash output >200 lines or >10k chars | Injects a reminder suggesting `grep` / `head` / `tail` / scoped `find` for next time |
+| `subagent-discipline` | Agent spawn prompt >2000 chars | Injects the tight-bundle pattern (static refs + dynamic delta + budget reminder) |
+| `token-telemetry` | After every tool call | Appends a TSV line to `docs/agent-runs.log` (timestamp, tool, approx tokens) for post-session analysis |
+
+After a long session, audit your log:
+
+```bash
+# Total tokens today:
+awk -F'\t' -v today=$(date -u +%Y-%m-%d) '$1 ~ today {input+=$4; output+=$5} END {print "in:", input, "out:", output}' docs/agent-runs.log
+
+# Heaviest single tool calls:
+sort -k5 -n -r docs/agent-runs.log | head -10
+```
+
+The hooks are advisory, not enforcement — they can warn but can't rewrite the tool result Claude already received. For real RTK-style proxy compression, see external tools like 9router. The hooks plus the `token-discipline` skill plus user discipline land roughly 30-50% savings vs naive use.
 
 ---
 

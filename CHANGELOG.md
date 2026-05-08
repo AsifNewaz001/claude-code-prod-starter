@@ -2,6 +2,42 @@
 
 All notable changes to this plugin are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] — 2026-05-08
+
+Token discipline hooks + skill. The plugin now actively nudges Claude toward better token discipline at the highest-leverage moments (bloated tool dumps, bloated subagent spawn prompts) and logs every tool call for post-session analysis.
+
+### Added
+
+- **`hooks/bash-output-discipline.sh`** (PostToolUse on Bash) — when a Bash command returns >200 lines or >10k chars, injects a system reminder with concrete suggestions (`grep` instead of `cat`, `--stat` before `git diff`, scoped `find` over `ls -R`).
+- **`hooks/subagent-discipline.sh`** (PreToolUse on Agent) — when about to spawn a subagent with a >2000 char prompt, injects the tight-bundle pattern (static refs by path + dynamic delta + budget). Stronger nag at >5000 chars.
+- **`hooks/token-telemetry.sh`** (PostToolUse on every tool) — appends a TSV line to `docs/agent-runs.log` per tool call: timestamp, session ID, tool name, approx input tokens, approx output tokens, cwd. Pure measurement; no Claude-visible output.
+- **`skills/token-discipline/SKILL.md`** — codifies the practices the hooks enforce. Includes telemetry-reading recipes, red flags, and honest scope ("no magic 65% savings; without discipline the hooks just ping you").
+
+### Changed
+
+- **`hooks/hooks.json`** — added PostToolUse and PreToolUse entries for the three new hooks.
+- **`skills/using-prod-starter/SKILL.md`** — added "Token discipline hooks (auto-enforced)" section so Claude treats hook reminders seriously. Skill list updated.
+- **`README.md`** — new "Token discipline (built-in hooks)" section with telemetry-reading examples. Counts updated: skills 12→13, hooks 1→4.
+- **`plugin.json`** — version 1.2.0 → 1.3.0. Description mentions the new hooks and skill.
+
+### Honest scope
+
+These hooks are **advisory**, not stream-rewriting. Claude Code's hook API can inject system messages but cannot modify the tool result the model already received. For RTK-style proxy compression of tool outputs, see external tools like 9router. The hooks here close the discipline gap, not the compression gap.
+
+Realistic savings stack:
+- Light vs full mode: ~70-85% on non-governance work
+- Right model picks: 2-3× on routine code
+- Tight subagent bundles (now nudged by hook): 50-70% per spawn
+- Output discipline (now nudged by hook): 10-15% in heavy debug sessions
+
+Compose with discipline and you land 30-50% in practice. 65% requires either external proxy compression or aggressive light-mode adoption.
+
+### Migration
+
+No breaking changes. Existing installs that pull `main` get the new hooks automatically. Three new files in `hooks/`, one new directory in `skills/`. The `docs/agent-runs.log` file is created per-project on first tool call (or in `~/.claude/agent-runs.log` if no `docs/` directory in cwd).
+
+Windows users: hooks are bash-only. Use WSL or Git Bash for execution.
+
 ## [1.2.0] — 2026-05-08
 
 Polish pass on the original 4 skills. Brings the whole skill library to one quality bar.
