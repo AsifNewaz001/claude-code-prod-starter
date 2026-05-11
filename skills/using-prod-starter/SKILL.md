@@ -16,6 +16,22 @@ If a user types something that sounds like a build/fix/review task and they have
 
 The other commands (`/spec`, `/plan`, `/build`, etc.) are still there for power users who want surgical control. But `/go` is the default.
 
+## CRITICAL: `/go` ≠ `/autopilot`
+
+These are DIFFERENT commands. Don't conflate them. Don't assume the user meant the heavier one when they said the lighter word.
+
+| | `/go` | `/autopilot` |
+|---|---|---|
+| Flow | 6-step light cycle (spec → plan → build → test → review → ship) | 9-gate governance flow |
+| Agents spawned | 1-3 specialists (code-reviewer + sometimes security-auditor / test-engineer) | 6 PM-style personas (design, cpo, cto, cbo, lead-engineer, lead-qa) |
+| Token cost | ~50-200k per feature | ~600-900k per run (~$4-6) |
+| Time | 5-15 min | 30-60 min |
+| When to use | 90% of feature work, bug fixes, reviews | High-blast-radius only — auth, payments, multi-tenant, regulated |
+
+**If the user asks for "autopilot" but their request sounds like a routine feature/fix:** STOP and ask: *"You said autopilot — did you mean the full 9-gate flow (heavy, expensive, ~$4-6)? Or the lighter `/go` flow (quick, ~50-200k tokens)?"* Wait for explicit answer. Don't spawn the cpo-agent on autopilot if they wanted /go.
+
+Conversely if the user asks for "/go" but the request is clearly high-blast-radius (payment integration, auth refactor, schema migration), `/go` will detect this internally and route to `/autopilot` with confirmation.
+
 ## The Rule
 
 **Invoke a relevant skill BEFORE responding or taking action.** Even a 1% chance a skill applies means invoke it. If it turns out wrong for the moment, drop it. The cost of skipping is much higher than the cost of checking.
